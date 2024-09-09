@@ -1,5 +1,5 @@
 
-# Zsh Shell Mark Script
+# Zsh Shell Mark Script v0.1
 
 A custom Zsh script for quickly marking, navigating, and managing directories in the terminal.
 
