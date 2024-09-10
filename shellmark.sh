@@ -26,9 +26,9 @@ check_cfg_dir(){
 is_dir() {
   local dir="$1"
   if [ -d "$dir" ]; then
-    echo "$dir will be add to the config"
+    printf "\033[1;32m\n - $dir will be add to the config \n \033[0m"
   else
-    echo "$dir is not real directory"
+    printf "\033[1;31m\n - $dir is not real directory\n \033[0m"
   fi
   }
 
@@ -41,7 +41,6 @@ reading_input() {
   else
     is_dir "$mark" || reading_input
   fi
-    echo "the marked dir is : $mark"
   }
 
 
@@ -52,7 +51,8 @@ make_path_absolute(){
 
 #checking if the mark already add to config.txt  if not add it to config
 check_if_mark_exist(){
-  grep -Fx "$mark" "$SM_CFG_PATH" && echo "the dir : $mark is already marked" || echo "$mark" >> $SM_CFG_PATH
+  grep -Fx "$mark" "$SM_CFG_PATH" && printf "\033[1;32m\n - the dir : $mark is already marked\n \033[0m" || echo "$mark" >> $SM_CFG_PATH && 
+  printf "\033[1;32m \n - you have add $mark to the mark list\n \033[0m"
 }
 
 #md stand for mark directory,it's the function we call from the sehll 
@@ -62,27 +62,31 @@ md() {
   make_path_absolute
   check_if_mark_exist
   mark=""
+  sed -i "/^$/d" "$SM_CFG_PATH"
 }
+
 shellmark(){
   check_cfg_dir
   mark="$(pwd)"
   check_if_mark_exist
-  echo "you have add $mark to the mark list"
   mark=""
-  zle accept-line
+  sed -i "/^$/d" "$SM_CFG_PATH"
+  zle -I
 }
 
 
 goto_mark(){
   selected_mark="$(cat "$SM_CFG_PATH" | fzf --prompt="Select Mark: " --preview 'ls -la {}' --border )"
   cd "$selected_mark"
+  sed -i "/^$/d" "$SM_CFG_PATH" 
   zle accept-line
 }
 
 delete_mark(){
   selected_mark="$(cat "$SM_CFG_PATH" | fzf --prompt="Select Mark: " --border )"
-  sed -i "s|^"$selected_mark"$||" "$SM_CFG_PATH"
+  sed -i "s|^"$selected_mark"$||" "$SM_CFG_PATH" && printf "\033[1;031m\n - $selected_mark has been removed \n \033[0m"
   sed -i "/^$/d" "$SM_CFG_PATH"
+  zle -I
   zle accept-line
 }
 
