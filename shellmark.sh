@@ -1,26 +1,13 @@
 #!/usr/bin/env zsh 
 
+#set cfg path if it's not already set
+: ${SM_CFG_PATH:=${XDG_CONFIG_HOME:-$HOME/.config}/zsh-shellmark/config.txt}
 
-#Config file path
-SM_CFG_DIR="$(dirname "$(realpath "$0")")"
-SM_CFG_PATH="$SM_CFG_DIR/config.txt"
+#Crating CFG FILE on Script start if it doesnt exist
+[ -e "$(dirname "$SM_CFG_PATH")" ] || mkdir -p "$(dirname "$SM_CFG_PATH")"
+[ -e "$SM_CFG_PATH" ] || touch "$SM_CFG_PATH"
+
 mark=""
-
-zle -N goto_mark
-zle -N shellmark
-zle -N delete_mark
-bindkey "^[d" delete_mark
-bindkey "^[g" goto_mark 
-bindkey "^[m" shellmark
-#Making sure the cfg file and dir exist
-check_cfg_dir(){
-  if [ ! -d "$SM_CFG_DIR" ]; then
-    mkdir -p $SM_CFG_DIR
-  fi 
-  if  [ ! -e "$SM_CFG_PATH" ]; then
-    touch "$SM_CFG_PATH"
-  fi
-  }
 
 #checking if the given value is realdir or not
 is_dir() {
@@ -44,10 +31,6 @@ reading_input() {
   }
 
 
-#converting the path to absolute ex: Document/  --> /home/username/Document
-make_path_absolute(){
-  mark="$(realpath "$mark")"
-}
 
 #checking if the mark already add to config.txt  if not add it to config
 check_if_mark_exist(){
@@ -57,26 +40,24 @@ check_if_mark_exist(){
 
 #md stand for mark directory,it's the function we call from the sehll 
 md() {
-  check_cfg_dir
   reading_input
-  make_path_absolute
+  mark=${mark:A} # changing path to absolute
   check_if_mark_exist
   mark=""
   sed -i "/^$/d" "$SM_CFG_PATH"
 }
 
 shellmark(){
-  check_cfg_dir
   mark="$(pwd)"
   check_if_mark_exist
   mark=""
-  sed -i "/^$/d" "$SM_CFG_PATH"
+  sed -i "/^$/d" "$SM_CFG_PATH" #removing empty line if exist
   zle -I
 }
 
 
 goto_mark(){
-  selected_mark="$(cat "$SM_CFG_PATH" | fzf --prompt="Select Mark: " --preview 'ls -la {}' --border )"
+  selected_mark="$(cat "$SM_CFG_PATH" | fzf --prompt="Select Mark: " --border )"
   cd "$selected_mark"
   sed -i "/^$/d" "$SM_CFG_PATH" 
   zle accept-line
@@ -85,8 +66,16 @@ goto_mark(){
 delete_mark(){
   selected_mark="$(cat "$SM_CFG_PATH" | fzf --prompt="Select Mark: " --border )"
   sed -i "s|^"$selected_mark"$||" "$SM_CFG_PATH" && printf "\033[1;031m\n - $selected_mark has been removed \n \033[0m"
-  sed -i "/^$/d" "$SM_CFG_PATH"
+  sed -i "/^$/d" "$SM_CFG_PATH" #removing empty line if exist
   zle -I
   zle accept-line
 }
 
+zle -N goto_mark
+zle -N shellmark
+zle -N delete_mark
+
+#keybinds
+bindkey "^[d" delete_mark
+bindkey "^[g" goto_mark 
+bindkey "^[m" shellmark
