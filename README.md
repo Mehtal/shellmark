@@ -32,3 +32,9 @@ This script was inspired by the mark feature in Neovim, which allows users to se
 2. Press alt + m to mark current directory
 3. Press Alt + g to select a marked directory and navigate to it.
 4. Press Alt + d to delete a marked directory.
+
+## License
+This project is licensed under the [MIT License](LICENSE).
+
+## Contributing
+Feel free to fork this repository, create new features, or submit bug fixes. All contributions are welcome!
